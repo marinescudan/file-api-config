@@ -1,0 +1,12 @@
+
+doctype html
+html(lang='en')
+    head
+        title= title
+    body
+        h1(class='title')= title
+        p(class='description')= description
+        ul(class="items")
+            each item in items
+                li(class="item")
+                    a(class="item-link" href=item.link target="_blank")= item.name
