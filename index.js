@@ -82,16 +82,12 @@ app.use(_reqmodler);
  * Inject view routes
  */
 app.use('/view/home', indexRoute);
-app.use('/view/category', itemRoute);
-app.use('/view/location', itemRoute);
-app.use('/view/group', itemRoute);
+app.use('/view/modelType', itemRoute);
 
 /**
  * Inject api routes
  */
-app.use('/api/category', itemRoute);
-app.use('/api/location', itemRoute);
-app.use('/api/group', itemRoute);
+app.use('/api/modelType', itemRoute);
 
 // Inject Morgan in development environment
 if (app.get('env') === 'development') {
@@ -111,9 +107,9 @@ debugDB('Connected to the database...');
 
 // Connect to the database
 mongoose
-  .connect("mongodb://localhost/vidly")
+  .connect("mongodb://localhost/o_o")
   .then(() => {
-    console.log("Connected to MongoDB...");
+    console.log("Connected to MongoDB o_o ...");
   })
   .catch(err => console.error("Could not connect to MongoBD", err));
 

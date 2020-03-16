@@ -1,5 +1,15 @@
+function getListData(items = [], data = {}) {
+    data.items = items;
+    return data;
+}
+
+function getItemData(item = {}, data = {}) {
+    data.item = item;
+    return data;
+}
+
 module.exports = {
-    category: require('./category.js'),
-    group: require('./group.js'),
-    location: require('./location.js'),
+    modelType: require('./modelType.js'),
+    getListData,
+    getItemData
 };
