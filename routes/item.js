@@ -3,108 +3,95 @@ const express = require('express');
 const router = express.Router();
 const Joi =  require('joi');
 const debug = require('debug')('app:debugStart');
-
-/* Create DB array - todo: set collection using collectionBuilder from models */
-const db = require('../db/index');
+const mongoose = require('mongoose');
 
 /* Set app dataModels */
 const models = require('../models/index');
-
-router.get('/', (req, res) => {
-   const items = db[req.$urlParams.modelType];
-
+router.get('/', async (req, res) => {
+   const currentModelType = models.types[req.$urlParams.modelType];
+   const items = await currentModelType.model.find().sort('name');
    if (req.$urlParams.requestType === 'api') {
       res.send(items);
    }
    if (req.$urlParams.requestType === "view") {
       // add the desc and title to the model
-      const renderItems = models.getListData(items, models[req.$urlParams.modelType].listDesc);
+      const renderItems = models.getListData(items, currentModelType.listDesc);
       res.render("list", renderItems);
    }
 });
 
-router.get('/:id', (req, res) => {
-   const list = db[req.$urlParams.modelType];
-   const item = list.find(
-      item => item.id === parseInt(req.params.id)
-   );
-
+router.get('/:id', async (req, res) => {
+   const currentModelType = models.types[req.$urlParams.modelType];
+   let item = await currentModelType.model.findByIdAndUpdate(req.params.id);
    if (req.$urlParams.requestType === 'api') {
       // If not exists, return 404
       if(!item) return res.status(404).send(`The item with the given id ${req.params.id} was not found`);
       // Return the item
-      if (req.$urlParams.requestType === "api") res.send(item);
+      res.send(item);
    }
-
    if (req.$urlParams.requestType === "view") {
-      // add the desc and title to the model 
-      const renderItem = models.getItemData(item, models[req.$urlParams.modelType].itemDesc);
+      // add the desc and title to the model
+      const renderItem = models.getItemData(item, currentModelType.itemDesc);
       // If not exists, return 404
       if (!renderItem) return res.status(404).send(`The item with the given id ${req.params.id} was not found`);
       // Return the item
-      if (req.$urlParams.requestType === "view") res.render("item", renderItem);
+      res.render("item", renderItem);
    }
-
 });
 
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
    // Validate object by item schema
-   const { error } = Joi.validate(req.body, models[req.$urlParams.modelType].itemModel);
-
+   const { error } = Joi.validate(req.body, models.types[req.$urlParams.modelType].itemModel);
    // If invalid, return 400 - Bad request
    if (error) return res.status(400).send(error.details[0].message);
-
+   const currentModelType = models.types[req.$urlParams.modelType];
    // Create new item
-   let item = {};
-   item = req.body
-   item.id = db[req.$urlParams.modelType].length + 1;
-
-   // Add item to list
-   db[req.$urlParams.modelType].push(item);
-
-   // Return the new item
-   res.send(item);
+   try {
+      let item = new currentModelType.model(req.body);
+      // Add item to list
+      item = await item.save();
+      // Return the new item
+      res.send(item);
+   } catch (error) {
+      console.log(error);
+      res.status(400).send(error)
+   }
 });
 
-router.put('/:id', (req, res) => {
-
-   // Lookup the item
-   let item = db[req.$urlParams.modelType].find(
-      item => item.id === parseInt(req.params.id)
-   );
-   // If not exists, return 404
-   if(!item) return res.status(404).send(`The item with the given id ${req.params.id} was not found`);
-
+router.put('/:id', async (req, res) => {
+   // Edit first and return
+   const currentModelType = models.types[req.$urlParams.modelType];
    // Validate object by item schema
-   const { error } = Joi.validate(req.body, models[req.$urlParams.modelType].itemModel);
-
+   const { error } = Joi.validate(req.body, models.types[req.$urlParams.modelType].itemModel);
    // If invalid, return 400 - Bad request
    if (error) return res.status(400).send(error.details[0].message);
-
-   // Update item doesnt work
-   const index = db[req.$urlParams.modelType].indexOf(item);
-   item = req.body;
-   db[req.$urlParams.modelType][index] = item;
-
-   // Return the updated item
-   res.send(item);
+   // Update item
+   try {
+      let item = await currentModelType.model.findByIdAndUpdate(
+         req.params.id,
+         req.body,
+         {new: true}
+      );
+      // Return the updated item
+      res.send(item);
+   } catch (error) {
+      // If not exists, return 404
+      if (!item) return res.status(404).send(error);
+   }
 });
 
-router.delete('/:id', (req, res) => {
-
-   // Lookup the item
-   let collectionType = req.$urlParams.modelType;
-   const item = db[collectionType].find(c => c.id === parseInt(req.params.id));
-
-   // If not exists, return 404
-   if(!item) return; res.status(404).send(`The item with the given id ${req.params.id} was not found`);
-
-   // Delete item from db
-   const index = db[collectionType].indexOf(item);
-   db[collectionType].splice(index, 1);
-
-   // Return the updated item
-   res.send(item);
+router.delete('/:id', async (req, res) => {
+   // Edit first and return
+   const currentModelType = models.types[req.$urlParams.modelType];
+   // Lookup the item & Delete item from db
+   try {
+      let item = await currentModelType.model.findByIdAndRemove( req.params.id );
+      // Return the updated item
+      res.send(item);
+   } catch (error) {
+      // If not exists, return 404
+      return res.status(404).send(error);
+   }
 });
 
 module.exports = router;

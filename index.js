@@ -78,16 +78,16 @@ app.use(helmet());
 app.use(authenticator);
 app.use(_reqmodler);
 
-/**
- * Inject view routes
- */
+/* Inject pages */
 app.use('/view/home', indexRoute);
-app.use('/view/modelType', itemRoute);
 
-/**
- * Inject api routes
- */
-app.use('/api/modelType', itemRoute);
+const {types} = require("./models/index");
+for (let name in types) {
+  /* Inject view model routes */
+  app.use(types[name].viewRoute, itemRoute);
+  /* Inject api model routes */
+  app.use(types[name].apiRoute, itemRoute);
+}
 
 // Inject Morgan in development environment
 if (app.get('env') === 'development') {
@@ -106,11 +106,8 @@ debugConfig('Mail Password: ' + config.get('mail.password'));
 debugDB('Connected to the database...');
 
 // Connect to the database
-mongoose
-  .connect("mongodb://localhost/o_o")
-  .then(() => {
-    console.log("Connected to MongoDB o_o ...");
-  })
+mongoose.connect("mongodb://localhost/o_o")
+  .then(() => { console.log("Connected to MongoDB o_o ..."); })
   .catch(err => console.error("Could not connect to MongoBD", err));
 
 

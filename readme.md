@@ -11,16 +11,19 @@ npm install
 ```
 Start Development server
 ```
-set app_password=1234
-node index
+set app_password=****
+node index 
+// or
+nodemon index
 ```
 Open web interface
 ```
 http://localhost:4000/view/home
+http://localhost:4000/view/<model>
 ```
 Access web api
 ```
-http://localhost:4000/api/<category>
+http://localhost:4000/api/<model>
 ```
 Enjoy!
 

@@ -1,15 +1,14 @@
-function getListData(items = [], data = {}) {
+let models = { types: {} };
+
+models.types.user = require('./user.model.js')
+models.types.product = require('./product.model.js')
+
+models.getListData = function (items = [], data = {}) {
     data.items = items;
     return data;
 }
-
-function getItemData(item = {}, data = {}) {
+models.getItemData = function (item = {}, data = {}) {
     data.item = item;
     return data;
 }
-
-module.exports = {
-    modelType: require('./modelType.js'),
-    getListData,
-    getItemData
-};
+module.exports = models;
