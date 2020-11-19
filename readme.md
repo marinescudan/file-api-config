@@ -1,6 +1,6 @@
 # The ultimate project
 
-Node Express Pug project, and the project name is o_O and is pronounced as oh_oh.
+Node Express Pug project, and the project name is o_O and is pronounced as o_OHhh.
 
 ## Development
 
